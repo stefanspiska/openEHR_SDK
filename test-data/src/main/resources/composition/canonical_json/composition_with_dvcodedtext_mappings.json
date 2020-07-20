@@ -1,0 +1,236 @@
+{
+  "_type": "COMPOSITION",
+  "name": {
+    "_type": "DV_TEXT",
+    "value": "Bericht"
+  },
+  "archetype_details": {
+    "archetype_id": {
+      "value": "openEHR-EHR-COMPOSITION.report.v1"
+    },
+    "template_id": {
+      "value": "EventTemplate"
+    },
+    "rm_version": "1.0.4"
+  },
+  "language": {
+    "terminology_id": {
+      "value": "ISO_639-1"
+    },
+    "code_string": "de"
+  },
+  "territory": {
+    "terminology_id": {
+      "value": "ISO_3166-1"
+    },
+    "code_string": "DE"
+  },
+  "category": {
+    "_type": "DV_CODED_TEXT",
+    "value": "event",
+    "defining_code": {
+      "terminology_id": {
+        "value": "openehr"
+      },
+      "code_string": "433"
+    }
+  },
+  "composer": {
+    "_type": "PARTY_IDENTIFIED",
+    "name": "Klaus Kinski",
+    "identifiers": [
+      {
+        "_type": "DV_IDENTIFIER",
+        "id": "bla"
+      }
+    ]
+  },
+  "context": {
+    "_type": "EVENT_CONTEXT",
+    "start_time": {
+      "_type": "DV_DATE_TIME",
+      "value": "2020-02-28T17:27:00,361251+01:00"
+    },
+    "setting": {
+      "_type": "DV_CODED_TEXT",
+      "value": "other care",
+      "defining_code": {
+        "terminology_id": {
+          "value": "openehr"
+        },
+        "code_string": "238"
+      },
+      "mappings": {
+        "_type": "TERM_MAPPING",
+        "match": "=",
+        "purpose": {
+          "_type": "DV_CODED_TEXT",
+          "value": "Erfasst",
+          "defining_code": {
+            "terminology_id": {
+              "value": "local"
+            },
+            "code_string": "irgendein Purpose"
+          }
+        },
+        "target": {
+          "terminology_id": {
+            "value": "SNOMED-CT"
+          },
+          "code_string": "345356676789"
+        }
+      }
+    },
+    "health_care_facility": {
+      "_type": "PARTY_IDENTIFIED",
+      "name": "Medizinische Hochschule Hannover",
+      "identifiers": [
+        {
+          "_type": "DV_IDENTIFIER",
+          "issuer": "FHIR Server",
+          "assigner": "Case Plus",
+          "id": "12345"
+        }
+      ]
+    }
+  },
+  "content": [
+    {
+      "_type": "OBSERVATION",
+      "name": {
+        "_type": "DV_TEXT",
+        "value": "Kopfumfang"
+      },
+      "language": {
+        "terminology_id": {
+          "value": "ISO_639-1"
+        },
+        "code_string": "de"
+      },
+      "encoding": {
+        "terminology_id": {
+          "value": "IANA_character-sets"
+        },
+        "code_string": "UTF-8"
+      },
+      "subject": {
+        "_type": "PARTY_SELF"
+      },
+      "data": {
+        "name": {
+          "_type": "DV_TEXT",
+          "value": "Event Series"
+        },
+        "origin": {
+          "_type": "DV_DATE_TIME",
+          "value": "2020-02-28T17:33:09,789308+01:00"
+        },
+        "events": [
+          {
+            "_type": "POINT_EVENT",
+            "name": {
+              "_type": "DV_TEXT",
+              "value": "*Any event (en)"
+            },
+            "time": {
+              "_type": "DV_DATE_TIME",
+              "value": "2020-02-28T17:27:00,361251+01:00"
+            },
+            "data": {
+              "_type": "ITEM_TREE",
+              "name": {
+                "_type": "DV_TEXT",
+                "value": "Tree"
+              },
+              "items": [
+                {
+                  "_type": "ELEMENT",
+                  "name": {
+                    "_type": "DV_TEXT",
+                    "value": "something"
+                  },
+                  "value": {
+                    "_type": "DV_CODED_TEXT",
+                    "value": "other care",
+                    "defining_code": {
+                      "terminology_id": {
+                        "value": "openehr"
+                      },
+                      "code_string": "238"
+                    },
+                    "mappings": [
+                      {
+                        "_type": "TERM_MAPPING",
+                        "match": "=",
+                        "purpose": {
+                          "_type": "DV_CODED_TEXT",
+                          "value": "Erfasst",
+                          "defining_code": {
+                            "terminology_id": {
+                              "value": "local"
+                            },
+                            "code_string": "irgendein Purpose"
+                          }
+                        },
+                        "target": {
+                          "terminology_id": {
+                            "value": "SNOMED-CT"
+                          },
+                          "code_string": "345356676789"
+                        }
+                      },
+                      {
+                        "_type": "TERM_MAPPING",
+                        "match": ">",
+                        "purpose": {
+                          "_type": "DV_CODED_TEXT",
+                          "value": "zzzzz",
+                          "defining_code": {
+                            "terminology_id": {
+                              "value": "local"
+                            },
+                            "code_string": "another mapping"
+                          }
+                        },
+                        "target": {
+                          "terminology_id": {
+                            "value": "SNOMED-CT"
+                          },
+                          "code_string": "11111111"
+                        }
+                      }
+                    ]
+                  },
+                  "archetype_node_id": "at0004"
+                },
+                {
+                  "_type": "ELEMENT",
+                  "name": {
+                    "_type": "DV_TEXT",
+                    "value": "stuff"
+                  },
+                  "value": {
+                    "_type": "DV_CODED_TEXT",
+                    "value": "other stuff",
+                    "defining_code": {
+                      "terminology_id": {
+                        "value": "openehr"
+                      },
+                      "code_string": "238"
+                    }
+                  },
+                  "archetype_node_id": "at0005"
+                }
+              ],
+              "archetype_node_id": "at0003"
+            },
+            "archetype_node_id": "at0010"
+          }
+        ],
+        "archetype_node_id": "at0001"
+      },
+      "archetype_node_id": "openEHR-EHR-OBSERVATION.head_circumference.v0"
+    }
+  ],
+  "archetype_node_id": "openEHR-EHR-COMPOSITION.report.v1"
+}

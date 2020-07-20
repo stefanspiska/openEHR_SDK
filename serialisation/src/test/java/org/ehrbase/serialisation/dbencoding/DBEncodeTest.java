@@ -25,6 +25,7 @@ import com.nedap.archie.rm.datastructures.Element;
 import com.nedap.archie.rm.datastructures.History;
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.datastructures.PointEvent;
+import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.quantity.DvInterval;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import org.apache.commons.io.IOUtils;
@@ -474,5 +475,33 @@ public class DBEncodeTest {
         String interpreted = new CanonicalXML().marshal(object);
 
         assertNotNull(interpreted);
+    }
+
+    @Test
+    public void encodingWithMappings() throws Exception {
+        Composition composition = new CanonicalJson().unmarshal(IOUtils.toString(CompositionTestDataCanonicalJson.DVCODEDTEXT_MAPPINGS.getStream(), UTF_8),Composition.class);
+
+        CompositionSerializer compositionSerializerRawJson = new CompositionSerializer();
+
+        String db_encoded = compositionSerializerRawJson.dbEncode(composition);
+
+        assertNotNull(db_encoded);
+
+        String converted = new LightRawJsonEncoder(db_encoded).encodeCompositionAsString();
+
+        assertNotNull(converted);
+
+        //see if this can be interpreted by Archie
+        Composition object = new CanonicalJson().unmarshal(converted,Composition.class);
+
+        assertNotNull(object);
+
+        DvCodedText dvCodedText = (DvCodedText)object.itemsAtPath("/content[openEHR-EHR-OBSERVATION.head_circumference.v0]/data[at0001]/events[at0010]/data[at0003]/items[at0004]/value").get(0);
+        assertEquals('=', dvCodedText.getMappings().get(0).getMatch());
+        assertEquals('>', dvCodedText.getMappings().get(1).getMatch());
+
+        dvCodedText = (DvCodedText)object.itemsAtPath("/content[openEHR-EHR-OBSERVATION.head_circumference.v0]/data[at0001]/events[at0010]/data[at0003]/items[at0005]/value").get(0);
+        assertEquals("other stuff", dvCodedText.getValue());
+
     }
 }
