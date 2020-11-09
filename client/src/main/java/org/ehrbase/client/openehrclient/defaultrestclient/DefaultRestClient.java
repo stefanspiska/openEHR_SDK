@@ -33,6 +33,7 @@ import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.UIDBasedId;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.http.Header;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
@@ -73,22 +74,47 @@ public class DefaultRestClient implements OpenEhrClient {
     static final String ACCEPT_APPLICATION_JSON = "application/json";
     static final String ACCEPT_APPLICATION_XML = "application/xml";
     static final ObjectMapper OBJECT_MAPPER = createObjectMapper();
+    private static final String nullHostName = null;
+    private static final HttpClient nullHttpClient = null;
     private final OpenEhrClientConfig config;
     private final TemplateProvider templateProvider;
     private final Executor executor;
     private final DefaultRestEhrEndpoint defaultRestEhrEndpoint;
     private final Map<UUID, DefaultRestDirectoryEndpoint> directoryEndpointMap = new WeakHashMap<>();
+    private final boolean useProxy;
+    private final int proxyPort;
+    private final String proxyHostName;
 
 
     public DefaultRestClient(OpenEhrClientConfig config, TemplateProvider templateProvider) {
-        this(config, templateProvider, null);
+        this(config, templateProvider, nullHttpClient);
     }
 
     public DefaultRestClient(OpenEhrClientConfig config, TemplateProvider templateProvider, HttpClient httpClient) {
+        this(config, templateProvider, httpClient, false, nullHostName, 0);
+    }
+
+    public DefaultRestClient(OpenEhrClientConfig config,
+                             TemplateProvider templateProvider,
+                             boolean useProxy,
+                             String proxyHostName,
+                             int proxyPort) {
+        this(config, templateProvider, nullHttpClient, useProxy, proxyHostName, proxyPort);
+    }
+
+    public DefaultRestClient(OpenEhrClientConfig config,
+                             TemplateProvider templateProvider,
+                             HttpClient httpClient,
+                             boolean useProxy,
+                             String proxyHostName,
+                             int proxyPort){
         this.config = config;
         this.templateProvider = templateProvider;
         executor = Executor.newInstance(httpClient);
         defaultRestEhrEndpoint = new DefaultRestEhrEndpoint(this);
+        this.useProxy = useProxy;
+        this.proxyPort = proxyPort;
+        this.proxyHostName = proxyHostName;
     }
 
 
@@ -128,15 +154,25 @@ public class DefaultRestClient implements OpenEhrClient {
             Request request = Request.Post(uri)
                     .addHeader(HttpHeaders.ACCEPT, accept)
                     .bodyString(bodyString, contentType);
+
+            request = configureRequestProxy(request);
+
             if (headers != null) {
                 headers.forEach(request::addHeader);
             }
-            response = executor.execute(request).returnResponse();
+            response = executor.execute(request) .returnResponse();
             checkStatus(response, HttpStatus.SC_OK, HttpStatus.SC_CREATED, HttpStatus.SC_NO_CONTENT);
         } catch (IOException e) {
             throw new ClientException(e.getMessage(), e);
         }
         return response;
+    }
+
+    private Request configureRequestProxy(Request request) {
+        request = (this.useProxy)
+                ? request.viaProxy(new HttpHost(proxyHostName, proxyPort))
+                : request;
+        return request;
     }
 
     protected VersionUid httpPut(URI uri, Locatable body, VersionUid versionUid) {
@@ -149,6 +185,9 @@ public class DefaultRestClient implements OpenEhrClient {
                     .addHeader(HttpHeaders.ACCEPT, ACCEPT_APPLICATION_JSON)
                     .addHeader(HttpHeaders.IF_MATCH, versionUid.toString())
                     .bodyString(new CanonicalJson().marshal(body), ContentType.APPLICATION_JSON);
+
+            request = configureRequestProxy(request);
+
             if (headers != null) {
                 headers.forEach(request::addHeader);
             }
@@ -188,6 +227,9 @@ public class DefaultRestClient implements OpenEhrClient {
         try {
             Request request = Request.Get(uri)
                     .addHeader(HttpHeaders.ACCEPT, accept);
+
+            request = configureRequestProxy(request);
+
             if (headers != null) {
                 headers.forEach(request::addHeader);
             }
