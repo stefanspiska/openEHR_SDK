@@ -33,18 +33,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static org.ehrbase.client.openehrclient.defaultrestclient.ConfirmedCovid19InfectionControlBuilder.buildConfirmedCovid19InfReport;
 import static org.junit.Assert.assertNotNull;
 
 @Category(Integration.class)
 public class PhenoTypeAqlTestIT {
-
     private  OpenEhrClient openEhrClient;
     private String REST_URI = "http://localhost:8080/ehrbase/rest/openehr/v1/";
-    private DvCodedText nullMode = null;
-    private DvInterval<DvDateTime> nullTime;
 
     @Before
     public void setupBeforeTest() throws URISyntaxException {
+        //Ensure opt for the template is known to EhrBase
         PhenotypeDataTemplateProvider tprovider = new PhenotypeDataTemplateProvider();
         DefaultRestClient client =
             new DefaultRestClient(
@@ -62,7 +61,7 @@ public class PhenoTypeAqlTestIT {
     }
 
     @Test
-    public void runsPhenotypeAqlQuery(){
+    public void runsConfirmedCovid19InfectionReportQuery(){
         final UUID ehrId =
             openEhrClient
                 .ehrEndpoint()
@@ -71,7 +70,7 @@ public class PhenoTypeAqlTestIT {
         final OpenEHRConfirmedCOVID19InfectionReportV0Composition mergedEntity =
             openEhrClient
                 .compositionEndpoint(ehrId)
-                .mergeCompositionEntity(buildCovid19InfectionReport());
+                .mergeCompositionEntity(buildConfirmedCovid19InfReport());
 
         String aql = "SELECT e/ehr_id/value FROM EHR e[ehr_id/value = $ehr_id] " +
                     "CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.report.v1] " +
@@ -85,57 +84,5 @@ public class PhenoTypeAqlTestIT {
                 .execute(query, new ParameterValue("ehr_id", ehrId));
 
         assertNotNull(queryResults);
-    }
-
-    private OpenEHRConfirmedCOVID19InfectionReportV0Composition buildCovid19InfectionReport() {
-        OpenEHRConfirmedCOVID19InfectionReportV0Composition c = new OpenEHRConfirmedCOVID19InfectionReportV0Composition();
-        c.setStartTimeValue(OffsetDateTime.of(2019, 04, 03, 22, 00, 00, 00, ZoneOffset.UTC));
-        c.setEndTimeValue(OffsetDateTime.now());
-        c.setLanguage(Language.DE);
-        c.setTerritory(Territory.DE);
-        c.setCategoryDefiningcode(CategoryDefiningcode.EVENT);
-        c.setSettingDefiningcode(SettingDefiningcode.OTHER_CARE);
-        c.setComposer(new PartyIdentified(null, "Test party identified", null));
-        c.setParticipations(new ArrayList<>());
-        c.getParticipations()
-            .add(
-                new Participation(
-                    new PartyIdentified(null, "Test participating party", null),
-                    new DvText("Participant func1"),
-                    nullMode,
-                    nullTime));
-
-        c.setReporting(new ArrayList<>());
-        c.getReporting().add(buildReportingSection());
-        return c;
-    }
-
-
-    private ReportingSection buildReportingSection() {
-        ReportingSection rs = new ReportingSection();
-        rs.setFirstTest(new ArrayList<>());
-        rs.getFirstTest().add(buildFirstTestObservation());
-        return rs;
-    }
-
-    private FirstTestObservation buildFirstTestObservation() {
-        FirstTestObservation fto = new FirstTestObservation();
-        fto.setFirstTest(new ArrayList<>());
-        fto
-            .getFirstTest()
-            .add(buildFirstTest());
-
-        fto.setOriginValue(OffsetDateTime.of(2019, 04, 03, 22, 00, 00, 00, ZoneOffset.UTC));
-        fto.setSubject(new PartySelf());
-        fto.setLanguage(Language.DE);
-        return fto;
-
-    }
-
-    private FirstTestFirstTestChoice buildFirstTest() {
-        FirstTestFirstTestPointEvent pointEvent = new FirstTestFirstTestPointEvent();
-        pointEvent.setTimeValue(OffsetDateTime.now());
-        pointEvent.setLabortestBezeichnungDefiningcode(LabortestBezeichnungDefiningcode.N2019_NCOV_NOVEL_CORONAVIRUS_SEROLOGY);
-        return pointEvent;
     }
 }
