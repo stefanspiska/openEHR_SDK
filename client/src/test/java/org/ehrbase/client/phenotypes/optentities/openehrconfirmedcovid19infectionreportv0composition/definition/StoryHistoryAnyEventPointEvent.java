@@ -1,0 +1,45 @@
+package org.ehrbase.client.phenotypes.optentities.openehrconfirmedcovid19infectionreportv0composition.definition;
+
+import com.nedap.archie.rm.datastructures.Cluster;
+import java.time.temporal.TemporalAccessor;
+import java.util.List;
+import org.ehrbase.client.annotations.Entity;
+import org.ehrbase.client.annotations.OptionFor;
+import org.ehrbase.client.annotations.Path;
+
+@Entity
+@OptionFor("POINT_EVENT")
+public class StoryHistoryAnyEventPointEvent implements StoryHistoryAnyEventChoice {
+  @Path("/time|value")
+  private TemporalAccessor timeValue;
+
+  @Path("/data[at0003]/items[at0004]")
+  private List<StoryHistoryStoryElement> story;
+
+  @Path("/data[at0003]/items[at0006]")
+  private List<Cluster> structuredDetail;
+
+  public void setTimeValue(TemporalAccessor timeValue) {
+     this.timeValue = timeValue;
+  }
+
+  public TemporalAccessor getTimeValue() {
+     return this.timeValue ;
+  }
+
+  public void setStory(List<StoryHistoryStoryElement> story) {
+     this.story = story;
+  }
+
+  public List<StoryHistoryStoryElement> getStory() {
+     return this.story ;
+  }
+
+  public void setStructuredDetail(List<Cluster> structuredDetail) {
+     this.structuredDetail = structuredDetail;
+  }
+
+  public List<Cluster> getStructuredDetail() {
+     return this.structuredDetail ;
+  }
+}
