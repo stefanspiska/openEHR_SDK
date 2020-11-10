@@ -1,17 +1,5 @@
 package org.ehrbase.client.openehrclient.defaultrestclient;
 
-import com.nedap.archie.rm.datavalues.DvCodedText;
-import com.nedap.archie.rm.datavalues.DvText;
-import com.nedap.archie.rm.datavalues.quantity.DvInterval;
-import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
-import com.nedap.archie.rm.generic.Participation;
-import com.nedap.archie.rm.generic.PartyIdentified;
-import com.nedap.archie.rm.generic.PartySelf;
-import org.ehrbase.client.phenotypes.optentities.openehrconfirmedcovid19infectionreportv0composition.definition.*;
-import org.ehrbase.client.phenotypes.optentities.shareddefinition.CategoryDefiningcode;
-import org.ehrbase.client.phenotypes.optentities.shareddefinition.Language;
-import org.ehrbase.client.phenotypes.optentities.shareddefinition.SettingDefiningcode;
-import org.ehrbase.client.phenotypes.optentities.shareddefinition.Territory;
 import org.ehrbase.client.Integration;
 import org.ehrbase.client.aql.parameter.ParameterValue;
 import org.ehrbase.client.aql.query.NativeQuery;
@@ -27,9 +15,6 @@ import org.junit.experimental.categories.Category;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -72,11 +57,16 @@ public class PhenoTypeAqlTestIT {
                 .compositionEndpoint(ehrId)
                 .mergeCompositionEntity(buildConfirmedCovid19InfReport());
 
-        String aql = "SELECT e/ehr_id/value FROM EHR e[ehr_id/value = $ehr_id] " +
-                    "CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.report.v1] " +
+        //this will work, i.e. server side fails if we don't add a second column in the SELECT clause
+//        String aql = "SELECT e/ehr_id/value, c/archetype_node_id " +
+        String aql = "SELECT e/ehr_id/value " +
+                    "FROM EHR e[ehr_id/value = $ehr_id] " +
+                    "CONTAINS COMPOSITION c[openEHR-EHR-COMPOSITION.report.v1] " +
                     "CONTAINS OBSERVATION o [openEHR-EHR-OBSERVATION.laboratory_test_result.v1]";
 
-        final NativeQuery<Record1<UUID>> query = Query.buildNativeQuery(aql, UUID.class);
+        final NativeQuery<Record1<UUID>> query =
+            Query
+                .buildNativeQuery(aql, UUID.class);
 
         final List<Record1<UUID>> queryResults =
             openEhrClient
