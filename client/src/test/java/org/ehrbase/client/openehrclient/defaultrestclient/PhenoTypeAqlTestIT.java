@@ -63,12 +63,54 @@ public class PhenoTypeAqlTestIT {
                     "FROM EHR e[ehr_id/value = $ehr_id] " +
                     "CONTAINS COMPOSITION c[openEHR-EHR-COMPOSITION.report.v1] " +
                     "CONTAINS OBSERVATION o [openEHR-EHR-OBSERVATION.laboratory_test_result.v1]";
+        
+
 
         final NativeQuery<Record1<UUID>> query =
             Query
                 .buildNativeQuery(aql, UUID.class);
 
-        final List<Record1<UUID>> queryResults =
+        @SuppressWarnings("rawtypes")
+		final List<Record1<UUID>> queryResults =
+            openEhrClient
+                .aqlEndpoint()
+                .execute(query, new ParameterValue("ehr_id", ehrId));
+
+        assertNotNull(queryResults);
+    }
+    
+    @Test
+    public void runsConfirmedCovid19ForCurrentDate(){
+        final UUID ehrId =
+            openEhrClient
+                .ehrEndpoint()
+                .createEhr();
+
+        final OpenEHRConfirmedCOVID19InfectionReportV0Composition mergedEntity =
+            openEhrClient
+                .compositionEndpoint(ehrId)
+                .mergeCompositionEntity(buildConfirmedCovid19InfReport());
+
+        //this will work, i.e. server side fails if we don't add a second column in the SELECT clause
+//        String aql = "SELECT e/ehr_id/value, c/archetype_node_id " +
+//        String aql = "SELECT e/ehr_id/value " +
+//                    "FROM EHR e[ehr_id/value = $ehr_id] " +
+//                    "CONTAINS COMPOSITION c[openEHR-EHR-COMPOSITION.report.v1] " +
+//                    "CONTAINS OBSERVATION o [openEHR-EHR-OBSERVATION.laboratory_test_result.v1]";
+        String aql = "select e/ehr_id/value, a/archetype_node_id\n" + 
+        		"from EHR e\n" + 
+        		"contains COMPOSITION a\n" + 
+        		"contains OBSERVATION a_a[openEHR-EHR-OBSERVATION.management_screening.v0]" + 
+        		"where a_a/data[at0001]/events[at0002]/data[at0003]/items[at0022]/items[at0004]/value=$icu_code\n" + 
+        		"and a/context/start_time/value = $curent_date";
+
+
+        final NativeQuery<Record1<UUID>> query =
+            Query
+                .buildNativeQuery(aql, UUID.class);
+
+        @SuppressWarnings("rawtypes")
+		final List<Record1<UUID>> queryResults =
             openEhrClient
                 .aqlEndpoint()
                 .execute(query, new ParameterValue("ehr_id", ehrId));
