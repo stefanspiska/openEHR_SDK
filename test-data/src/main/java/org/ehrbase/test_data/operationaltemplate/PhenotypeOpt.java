@@ -6,10 +6,29 @@ import java.util.Arrays;
 public enum PhenotypeOpt {
     CONFIRMED_COVID19_INFECTION_REPORT("Confirmed Covid 19 infection report",
                                        "Confirmed_Covid19_Inf_Rep.opt",
-                                       "openEHR confirmed COVID-19 infection report.v0");
-    private final String filename;
-    private final String templateId;
-    private final String description;
+                                       "openEHR confirmed COVID-19 infection report.v0"),
+	
+	GECCO_PERSONENDATEN("GECCO personal data for patient.",
+            "GECCO_Personendaten.opt",
+            "GECCO_Personendatem"),
+	
+	GECCO_ATEMFREQUENZ("Respitatory frequenz parameters.",
+            "Atemfrequenz.opt",
+            "Atemfrequenz"),
+	
+	GECCO_BEFUND_DER_BLUTGASANALYSE("Respitatory frequenz parameters.",
+            "Befund der Blutgasanalyse.opt",
+            "Befund der Blutgasanalyse"),
+	
+	GECCO_BEATMUNGSWERTE("Respitatory frequenz parameters.",
+            "Beatmungswerte.opt",
+            "Beatmungswerte");
+	
+	private final String description;
+	private final String filename;
+	private final String templateId;
+    
+    
 
     PhenotypeOpt(String description, String filename, String templateId){
         this.filename = filename;
