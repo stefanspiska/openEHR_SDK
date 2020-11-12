@@ -10,7 +10,7 @@ public enum PhenotypeOpt {
 	
 	GECCO_PERSONENDATEN("GECCO personal data for patient.",
             "GECCO_Personendaten.opt",
-            "GECCO_Personendatem"),
+            "GECCO_Personendaten"),
 	
 	GECCO_ATEMFREQUENZ("Respitatory frequenz parameters.",
             "Atemfrequenz.opt",
@@ -19,6 +19,10 @@ public enum PhenotypeOpt {
 	GECCO_BEFUND_DER_BLUTGASANALYSE("Respitatory frequenz parameters.",
             "Befund der Blutgasanalyse.opt",
             "Befund der Blutgasanalyse"),
+	
+	GECCO_DIAGNOSE("Diagnose.",
+            "GECCO_Diagnose.opt",
+            "GECCO_Diagnose"),
 	
 	GECCO_BEATMUNGSWERTE("Respitatory frequenz parameters.",
             "Beatmungswerte.opt",
@@ -37,7 +41,7 @@ public enum PhenotypeOpt {
     }
 
     public InputStream getStream(){
-        return getClass().getResourceAsStream("/operationaltemplate/" + filename);
+        return getClass().getResourceAsStream("/operationaltemplate/gecco11112020/opt/" + filename);
     }
 
     public static PhenotypeOpt findByTemplateId(String templateId) {

@@ -63,8 +63,6 @@ public class PhenoTypeAqlTestIT {
                     "FROM EHR e[ehr_id/value = $ehr_id] " +
                     "CONTAINS COMPOSITION c[openEHR-EHR-COMPOSITION.report.v1] " +
                     "CONTAINS OBSERVATION o [openEHR-EHR-OBSERVATION.laboratory_test_result.v1]";
-        
-        action
 
         final NativeQuery<Record1<UUID>> query =
             Query
