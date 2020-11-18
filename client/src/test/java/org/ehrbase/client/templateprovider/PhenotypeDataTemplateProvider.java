@@ -30,9 +30,12 @@ public class PhenotypeDataTemplateProvider implements TemplateProvider {
     }
 
     public List<String> listTemplateIds(){
-        return Arrays
+    	List<String> templatesAvailable =  Arrays
             .stream(PhenotypeOpt.values())
             .map(PhenotypeOpt::getTemplateId)
             .collect(Collectors.toList());
+    	
+    	templatesAvailable.forEach(System.out::println);
+    	return templatesAvailable;
     }
 }
