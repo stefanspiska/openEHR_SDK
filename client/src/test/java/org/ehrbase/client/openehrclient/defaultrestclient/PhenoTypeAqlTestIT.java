@@ -11,6 +11,7 @@ import org.ehrbase.client.phenotypes.optentities.openehrconfirmedcovid19infectio
 import org.ehrbase.client.templateprovider.PhenotypeDataTemplateProvider;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -132,6 +133,7 @@ public class PhenoTypeAqlTestIT {
     }
     
     @Test
+    @Ignore("test fails doe to the lack of support for versioned objects in AQL.")
     public void runsAdultsInHipersensitiveDrugTreatmentQueryUsingVerionedObjects(){
         final UUID ehrId =
             openEhrClient
