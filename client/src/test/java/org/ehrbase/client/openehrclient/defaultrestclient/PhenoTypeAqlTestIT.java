@@ -58,11 +58,86 @@ public class PhenoTypeAqlTestIT {
                 .mergeCompositionEntity(buildConfirmedCovid19InfReport());
 
         //this will work, i.e. server side fails if we don't add a second column in the SELECT clause
-//        String aql = "SELECT e/ehr_id/value, c/archetype_node_id " +
-        String aql = "SELECT e/ehr_id/value " +
+        String aql = "SELECT e/ehr_id/value, c/archetype_node_id " +
+      //  String aql = "SELECT e/ehr_id/value " +
                     "FROM EHR e[ehr_id/value = $ehr_id] " +
                     "CONTAINS COMPOSITION c[openEHR-EHR-COMPOSITION.report.v1] " +
                     "CONTAINS OBSERVATION o [openEHR-EHR-OBSERVATION.laboratory_test_result.v1]";
+
+        final NativeQuery<Record1<UUID>> query =
+            Query
+                .buildNativeQuery(aql, UUID.class);
+
+        @SuppressWarnings("rawtypes")
+		final List<Record1<UUID>> queryResults =
+            openEhrClient
+                .aqlEndpoint()
+                .execute(query, new ParameterValue("ehr_id", ehrId));
+
+        assertNotNull(queryResults);
+    }
+    
+    @Test
+    public void runsHydroxychloroquineAloneTreatmentQuery(){
+        final UUID ehrId =
+            openEhrClient
+                .ehrEndpoint()
+                .createEhr();
+
+        final OpenEHRConfirmedCOVID19InfectionReportV0Composition mergedEntity =
+            openEhrClient
+                .compositionEndpoint(ehrId)
+                .mergeCompositionEntity(buildConfirmedCovid19InfReport());
+
+        //this will work, i.e. server side fails if we don't add a second column in the SELECT clause
+//        String aql = "SELECT e/ehr_id/value, c/archetype_node_id " +
+        String aql = "select\n" + 
+        		"    a_a/activities[at0001]/description[at0002]/items[at0070]/value/value\n" + 
+        		"from EHR e\n" + 
+        		"contains COMPOSITION a\n" + 
+        		"contains INSTRUCTION a_a[openEHR-EHR-INSTRUCTION.medication_order.v1]\n" + 
+        		"where a_a/activities[at0001]/description[at0002]/items[at0070]/value/value='P01BA02'";
+
+        final NativeQuery<Record1<UUID>> query =
+            Query
+                .buildNativeQuery(aql, UUID.class);
+
+        @SuppressWarnings("rawtypes")
+		final List<Record1<UUID>> queryResults =
+            openEhrClient
+                .aqlEndpoint()
+                .execute(query, new ParameterValue("ehr_id", ehrId));
+
+        assertNotNull(queryResults);
+    }
+    
+    @Test
+    public void runsAdultsInHipersensitiveDrugTreatmentQueryUsingVerionedObjects(){
+        final UUID ehrId =
+            openEhrClient
+                .ehrEndpoint()
+                .createEhr();
+
+        final OpenEHRConfirmedCOVID19InfectionReportV0Composition mergedEntity =
+            openEhrClient
+                .compositionEndpoint(ehrId)
+                .mergeCompositionEntity(buildConfirmedCovid19InfReport());
+
+        //this will work, i.e. server side fails if we don't add a second column in the SELECT clause
+//        String aql = "SELECT e/ehr_id/value, c/archetype_node_id " +
+        String aql = "select distinct e/ehr_id/value\n" + 
+        		"from EHR e contains\n" + 
+        		"VERSIONED_OBJECT vo contains\n" + 
+        		"VERSION a[all_versions]\n" + 
+        		"contains COMPOSITION c\n" + 
+        		"contains (\n" + 
+        		"CLUSTER a_a[openEHR-EHR-CLUSTER.person_birth_data_iso.v0] and\n" + 
+        		"INSTRUCTION a_b[openEHR-EHR-INSTRUCTION.medication_order.v1])\n" + 
+        		"where\n" + 
+        		"a_a/items[at0001]/value<2002 and\n" + 
+        		"a_b/activities[at0001]/description[at0002]/items[at0070]/value/value matches {TERMINOLOGY('expand','http://hl7.org/fhir/4.0', 'url=http://snomed.info/sct?fhir_vs=isa/50697003')} and\n" + 
+        		"a/commit_audit/time_committed/value>'2018-11-01' and\n" + 
+        		"a/commit_audit/time_committed/value>'2020-01-31'";
 
         final NativeQuery<Record1<UUID>> query =
             Query
