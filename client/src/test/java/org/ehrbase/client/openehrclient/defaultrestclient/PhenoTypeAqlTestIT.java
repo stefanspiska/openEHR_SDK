@@ -1,5 +1,15 @@
 package org.ehrbase.client.openehrclient.defaultrestclient;
 
+import static org.ehrbase.client.openehrclient.defaultrestclient.ConfirmedCovid19InfectionControlBuilder.buildConfirmedCovid19InfReport;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.UUID;
+
 import org.ehrbase.client.Integration;
 import org.ehrbase.client.aql.parameter.ParameterValue;
 import org.ehrbase.client.aql.query.NativeQuery;
@@ -9,19 +19,11 @@ import org.ehrbase.client.openehrclient.OpenEhrClient;
 import org.ehrbase.client.openehrclient.OpenEhrClientConfig;
 import org.ehrbase.client.phenotypes.optentities.openehrconfirmedcovid19infectionreportv0composition.OpenEHRConfirmedCOVID19InfectionReportV0Composition;
 import org.ehrbase.client.templateprovider.PhenotypeDataTemplateProvider;
-import org.junit.Assert;
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.UUID;
-
-import static org.ehrbase.client.openehrclient.defaultrestclient.ConfirmedCovid19InfectionControlBuilder.buildConfirmedCovid19InfReport;
-import static org.junit.Assert.*;
 
 @Category(Integration.class)
 public class PhenoTypeAqlTestIT {
@@ -99,7 +101,7 @@ public class PhenoTypeAqlTestIT {
     }
     
     @Test
-    public void runsHydroxychloroquineAloneTreatmentQuery(){
+    public void runsHydroxychloroquineAloneTreatmentQueryLaneEtAl(){
         final UUID ehrId =
             openEhrClient
                 .ehrEndpoint()
@@ -111,7 +113,6 @@ public class PhenoTypeAqlTestIT {
                 .mergeCompositionEntity(buildConfirmedCovid19InfReport());
 
         //this will work, i.e. server side fails if we don't add a second column in the SELECT clause
-//        String aql = "SELECT e/ehr_id/value, c/archetype_node_id " +
         String aql = "select\n" + 
         		"    a_a/activities[at0001]/description[at0002]/items[at0070]/value/value\n" + 
         		"from EHR e\n" + 
@@ -132,9 +133,13 @@ public class PhenoTypeAqlTestIT {
         assertNotNull(queryResults);
     }
     
+    
+    /**
+     * 
+     */
     @Test
     @Ignore("test fails doe to the lack of support for versioned objects in AQL.")
-    public void runsAdultsInHipersensitiveDrugTreatmentQueryUsingVerionedObjects(){
+    public void runsAdultsInHipersensitiveDrugTreatmentQueryUsingVerionedObjectsMoralesElAl(){
         final UUID ehrId =
             openEhrClient
                 .ehrEndpoint()
@@ -146,7 +151,6 @@ public class PhenoTypeAqlTestIT {
                 .mergeCompositionEntity(buildConfirmedCovid19InfReport());
 
         //this will work, i.e. server side fails if we don't add a second column in the SELECT clause
-//        String aql = "SELECT e/ehr_id/value, c/archetype_node_id " +
         String aql = "select distinct e/ehr_id/value\n" + 
         		"from EHR e contains\n" + 
         		"VERSIONED_OBJECT vo contains\n" + 
@@ -186,18 +190,120 @@ public class PhenoTypeAqlTestIT {
                 .compositionEndpoint(ehrId)
                 .mergeCompositionEntity(buildConfirmedCovid19InfReport());
 
-        //this will work, i.e. server side fails if we don't add a second column in the SELECT clause
-//        String aql = "SELECT e/ehr_id/value, c/archetype_node_id " +
-//        String aql = "SELECT e/ehr_id/value " +
-//                    "FROM EHR e[ehr_id/value = $ehr_id] " +
-//                    "CONTAINS COMPOSITION c[openEHR-EHR-COMPOSITION.report.v1] " +
-//                    "CONTAINS OBSERVATION o [openEHR-EHR-OBSERVATION.laboratory_test_result.v1]";
         String aql = "select e/ehr_id/value, a/archetype_node_id\n" + 
         		"from EHR e\n" + 
         		"contains COMPOSITION a\n" + 
         		"contains OBSERVATION a_a[openEHR-EHR-OBSERVATION.management_screening.v0]" + 
         		"where a_a/data[at0001]/events[at0002]/data[at0003]/items[at0022]/items[at0004]/value=$icu_code\n" + 
         		"and a/context/start_time/value = $curent_date";
+
+
+        final NativeQuery<Record1<UUID>> query =
+            Query
+                .buildNativeQuery(aql, UUID.class);
+
+        @SuppressWarnings("rawtypes")
+		final List<Record1<UUID>> queryResults =
+            openEhrClient
+                .aqlEndpoint()
+                .execute(query, new ParameterValue("$curent_date", DateTime.now()), new ParameterValue<>("$icu_code", "sample_icu_code"));
+
+        assertNotNull(queryResults);
+    }
+    
+    @Test
+    public void runsTreatmentWithHydroxicloroquineLaneEtAl(){
+        final UUID ehrId =
+            openEhrClient
+                .ehrEndpoint()
+                .createEhr();
+
+        final OpenEHRConfirmedCOVID19InfectionReportV0Composition mergedEntity =
+            openEhrClient
+                .compositionEndpoint(ehrId)
+                .mergeCompositionEntity(buildConfirmedCovid19InfReport());
+
+        String aql = "select\n" + 
+        		"    a_a/activities[at0001]/description[at0002]/items[at0070]/value/value\n" + 
+        		"from EHR e\n" + 
+        		"contains COMPOSITION a\n" + 
+        		"contains INSTRUCTION a_a[openEHR-EHR-INSTRUCTION.medication_order.v1]\n" + 
+        		"where a_a/activities[at0001]/description[at0002]/items[at0070]/value/value='P01BA02'";
+
+
+        final NativeQuery<Record1<UUID>> query =
+            Query
+                .buildNativeQuery(aql, UUID.class);
+
+        @SuppressWarnings("rawtypes")
+		final List<Record1<UUID>> queryResults =
+            openEhrClient
+                .aqlEndpoint()
+                .execute(query, new ParameterValue("ehr_id", ehrId));
+
+        assertNotNull(queryResults);
+    }
+    
+    
+    @Test
+    public void runsTreatmentWithHydroxicloroquineAndAzithromyzinLaneEtAl(){
+        final UUID ehrId =
+            openEhrClient
+                .ehrEndpoint()
+                .createEhr();
+
+        final OpenEHRConfirmedCOVID19InfectionReportV0Composition mergedEntity =
+            openEhrClient
+                .compositionEndpoint(ehrId)
+                .mergeCompositionEntity(buildConfirmedCovid19InfReport());
+
+        String aql = "select\n" + 
+        		"    a_a/activities[at0001]/description[at0002]/items[at0070]/value/value\n" + 
+        		"from EHR e\n" + 
+        		"contains COMPOSITION a\n" + 
+        		"contains INSTRUCTION a_a[openEHR-EHR-INSTRUCTION.medication_order.v1]\n" + 
+        		"where\n" + 
+        		"    a_a/activities[at0001]/description[at0002]/items[at0070]/value/value='P01BA02' and\n" + 
+        		"    a_a/activities[at0001]/description[at0002]/items[at0070]/value/value='J01FA10'";
+
+
+        final NativeQuery<Record1<UUID>> query =
+            Query
+                .buildNativeQuery(aql, UUID.class);
+
+        @SuppressWarnings("rawtypes")
+		final List<Record1<UUID>> queryResults =
+            openEhrClient
+                .aqlEndpoint()
+                .execute(query, new ParameterValue("ehr_id", ehrId));
+
+        assertNotNull(queryResults);
+    }
+    
+    @Test
+    public void runsDefinitionOfIndexEventLaneEtAl(){
+    	//In the HCQ versus SSZ study, the index event was defined as the first recorded dispensing or prescription of the drug in a patient’s history.
+        final UUID ehrId =
+            openEhrClient
+                .ehrEndpoint()
+                .createEhr();
+
+        final OpenEHRConfirmedCOVID19InfectionReportV0Composition mergedEntity =
+            openEhrClient
+                .compositionEndpoint(ehrId)
+                .mergeCompositionEntity(buildConfirmedCovid19InfReport());
+
+        String aql = "select\n" + 
+        		"    MIN(a_b/activities[at0001]/description[at0002]/items[at0113]/items[at0012]/value)\n" + 
+        		"from EHR e\n" + 
+        		"contains COMPOSITION a\n" + 
+        		"contains (\n" + 
+        		"    EVALUATION a_a[openEHR-EHR-EVALUATION.problem_diagnosis.v1] and\n" + 
+        		"    INSTRUCTION a_b[openEHR-EHR-INSTRUCTION.medication_order.v1])\n" + 
+        		"where\n" + 
+        		"    a_a/data[at0001]/items[at0002]/value/value='RA01. 0' and\n" + 
+        		"    a_b/activities[at0001]/description[at0002]/items[at0070]/value/value='P01BA02' and\n" + 
+        		"    a_b/activities[at0001]/description[at0002]/items[at0070]/value/value='A07EC01'";
 
 
         final NativeQuery<Record1<UUID>> query =
@@ -227,4 +333,17 @@ public class PhenoTypeAqlTestIT {
                 .createEhr();
         return ehrId;
     }
+    
+    /**
+     * References
+[1]       Mo H, Thompson WK, Rasmussen LV, Pacheco JA, Jiang G, Kiefer R, et al. Desiderata for computable representations of electronic health records-driven phenotype algorithms. J Am Med Inform Assoc 2015;22:1220–30. https://doi.org/10.1093/jamia/ocv112.
+
+[2]       Newton KM, Peissig PL, Kho AN, Bielinski SJ, Berg RL, Choudhary V, et al. Validation of electronic medical record-based phenotyping algorithms: results and lessons learned from the eMERGE network. J Am Med Inform Assoc JAMIA 2013;20:e147–54. https://doi.org/10.1136/amiajnl-2012-000896.
+
+[3]       Rasmussen LV, Kiefer RC, Mo H, Speltz P, Thompson WK, Jiang G, et al. A Modular Architecture for Electronic Health Record-Driven Phenotyping. AMIA Jt Summits Transl Sci Proc AMIA Jt Summits Transl Sci 2015;2015:147–51.
+
+[4]       Albers DJ, Elhadad N, Claassen J, Perotte R, Goldstein A, Hripcsak G. Estimating summary statistics for electronic health record laboratory data for use in high-throughput phenotyping algorithms. J Biomed Inform 2018;78:87–101. https://doi.org/10.1016/j.jbi.2018.01.004.
+
+[5]       Denaxas S, Gonzalez-Izquierdo A, Direk K, Fitzpatrick NK, Fatemifar G, Banerjee A, et al. UK phenomics platform for developing and validating electronic health record phenotypes: CALIBER. J Am Med Inform Assoc JAMIA 2019;26:1545–59. https://doi.org/10.1093/jamia/ocz105.
+     */
 }
