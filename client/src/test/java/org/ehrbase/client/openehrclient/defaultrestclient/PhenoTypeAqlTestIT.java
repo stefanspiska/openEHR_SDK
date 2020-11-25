@@ -206,7 +206,7 @@ public class PhenoTypeAqlTestIT {
 		final List<Record1<UUID>> queryResults =
             openEhrClient
                 .aqlEndpoint()
-                .execute(query, new ParameterValue("$curent_date", DateTime.now()), new ParameterValue<>("$icu_code", "sample_icu_code"));
+                .execute(query, new ParameterValue("$curent_date", "2020-11-08T17:49:15+00:00"), new ParameterValue<>("$icu_code", "sample_icu_code"));
 
         assertNotNull(queryResults);
     }
@@ -281,6 +281,7 @@ public class PhenoTypeAqlTestIT {
     }
     
     @Test
+    @Ignore("MIN not supported")
     public void runsDefinitionOfIndexEventLaneEtAl(){
     	//In the HCQ versus SSZ study, the index event was defined as the first recorded dispensing or prescription of the drug in a patient’s history.
         final UUID ehrId =
@@ -315,6 +316,131 @@ public class PhenoTypeAqlTestIT {
             openEhrClient
                 .aqlEndpoint()
                 .execute(query, new ParameterValue("ehr_id", ehrId));
+
+        assertNotNull(queryResults);
+    }
+    
+    @Test
+    @Ignore("MIN not supported")
+    public void runsDefinitionOfIndexEvent2LaneEtAlIncludingRAdiagnosis(){
+    	//In the HCQ versus SSZ study, the index event was defined as the first recorded dispensing or prescription of the drug in a patient’s history.
+        final UUID ehrId =
+            openEhrClient
+                .ehrEndpoint()
+                .createEhr();
+
+        final OpenEHRConfirmedCOVID19InfectionReportV0Composition mergedEntity =
+            openEhrClient
+                .compositionEndpoint(ehrId)
+                .mergeCompositionEntity(buildConfirmedCovid19InfReport());
+
+		/*
+		 * String aql = "select\n" +
+		 * "    MIN(a_b/activities[at0001]/description[at0002]/items[at0113]/items[at0012]/value)\n"
+		 * + "from EHR e\n" + "contains COMPOSITION a\n" + "contains (\n" +
+		 * "    EVALUATION a_a[openEHR-EHR-EVALUATION.problem_diagnosis.v1] and\n" +
+		 * "    INSTRUCTION a_b[openEHR-EHR-INSTRUCTION.medication_order.v1])\n" +
+		 * "where\n" + "    a_a/data[at0001]/items[at0002]/value/value='RA01. 0' and\n"
+		 * +
+		 * "    a_b/activities[at0001]/description[at0002]/items[at0070]/value/value='P01BA02' and\n"
+		 * +
+		 * "    a_b/activities[at0001]/description[at0002]/items[at0070]/value/value='A07EC01'"
+		 * ;
+		 */
+        
+        String aql ="select\n" + 
+        		"MIN(a_b/activities[at0001]/description[at0002]/items[at0129]/items[at0155]/value/value)\n" + 
+        		"from EHR e\n" + 
+        		"contains COMPOSITION a\n" + 
+        		"contains (\n" + 
+        		"EVALUATION a_a[openEHR-EHR-EVALUATION.problem_diagnosis.v1] and\n" + 
+        		"INSTRUCTION a_b[openEHR-EHR-INSTRUCTION.medication_order.v1])\n" + 
+        		"where\n" + 
+        		"a_a/data[at0001]/items[at0002]/value/value='M06.9' and\n" + 
+        		"a_b/activities[at0001]/description[at0002]/items[at0070]/value/value='P01BA02' and\n" + 
+        		"a_b/activities[at0001]/description[at0002]/items[at0070]/value/value='A07EC01' and\n" + 
+        		"a_a/data[at0001]/items[at0003]/value/value<=a_b/activities[at0001]/description[at0002]/items[at0129]/items[at0155]/value/value\n" + 
+        		"\n" + 
+        		"";
+
+
+        final NativeQuery<Record1<UUID>> query =
+            Query
+                .buildNativeQuery(aql, UUID.class);
+
+        @SuppressWarnings("rawtypes")
+		final List<Record1<UUID>> queryResults =
+            openEhrClient
+                .aqlEndpoint()
+                .execute(query, new ParameterValue("ehr_id", ehrId));
+
+        assertNotNull(queryResults);
+    }
+    
+    @Test
+    @Ignore("substraction of periods not supported")
+    public void runsQueryContinousObservationofAtLeast1YearBeforeIndexEvent(){
+    	//In the HCQ versus SSZ study, the index event was defined as the first recorded dispensing or prescription of the drug in a patient’s history.
+        final UUID ehrId =
+            openEhrClient
+                .ehrEndpoint()
+                .createEhr();
+
+        final OpenEHRConfirmedCOVID19InfectionReportV0Composition mergedEntity =
+            openEhrClient
+                .compositionEndpoint(ehrId)
+                .mergeCompositionEntity(buildConfirmedCovid19InfReport());
+
+        String aql = "select e/ehr_id/value, a/uid/value\n" + 
+        		"from EHR e\n" + 
+        		"contains COMPOSITION a\n" + 
+        		"where e/time_created/value <= ($index_date_2 - P1Y)";//the index event is relative to each patient, thus this subtraction is needed.
+
+        final NativeQuery<Record1<UUID>> query =
+            Query
+                .buildNativeQuery(aql, UUID.class);
+
+        @SuppressWarnings("rawtypes")
+		final List<Record1<UUID>> queryResults =
+            openEhrClient
+                .aqlEndpoint()
+                .execute(query, new ParameterValue("$index_date_2", DateTime.now().toString()));//a prior query should determine the index_date_2 but we will use current time for testing purposes.
+
+        assertNotNull(queryResults);
+    }
+    
+    @Test
+    public void runsQueryHasReumatoidArthritisAnyTimeBeforeIndexEvent(){
+    	//In the HCQ versus SSZ study, the index event was defined as the first recorded dispensing or prescription of the drug in a patient’s history.
+        final UUID ehrId =
+            openEhrClient
+                .ehrEndpoint()
+                .createEhr();
+
+        final OpenEHRConfirmedCOVID19InfectionReportV0Composition mergedEntity =
+            openEhrClient
+                .compositionEndpoint(ehrId)
+                .mergeCompositionEntity(buildConfirmedCovid19InfReport());
+
+        String aql = "select e/ehr_id, a/uid/value \n" + 
+        		"from EHR e\n" + 
+        		"contains COMPOSITION a\n" + 
+        		"contains EVALUATION a_b[openEHR-EHR-EVALUATION.problem_diagnosis.v1]\n" + 
+        		"where\n" + 
+        		" a_b/data[at0001]/items[at0002]/value/value='M06.9' and \n" + 
+        		"a_b/data[at0001]/items[at0003]/value/value <= '$index_date' and \n" + 
+        		" e/ehr_id = '$ehr_id'";//the index event is relative to each patient, thus this subtraction is needed.
+
+        final NativeQuery<Record1<UUID>> query =
+            Query
+                .buildNativeQuery(aql, UUID.class);
+
+        System.out.println("the query is: "+aql);
+        @SuppressWarnings("rawtypes")
+		final List<Record1<UUID>> queryResults =
+            openEhrClient
+                .aqlEndpoint()
+                .execute(query, new ParameterValue("$index_date","2020-11-08T17:49:15+00:00"), new ParameterValue("$ehr_id", "2247ea3e-4a93-4fc9-ade0-3b4ee0c12970"));//a prior query should determine the index_date_2 but we will use current time for testing purposes.
 
         assertNotNull(queryResults);
     }
