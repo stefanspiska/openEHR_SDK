@@ -211,6 +211,8 @@ public class PhenoTypeAqlTestIT {
         assertNotNull(queryResults);
     }
     
+    /*********************************************Lane et al.*************************************************************/
+    
     @Test
     public void runsTreatmentWithHydroxicloroquineLaneEtAl(){
         final UUID ehrId =
@@ -431,6 +433,115 @@ public class PhenoTypeAqlTestIT {
         		"a_b/data[at0001]/items[at0003]/value/value <= '$index_date' and \n" + 
         		" e/ehr_id = '$ehr_id'";//the index event is relative to each patient, thus this subtraction is needed.
 
+        final NativeQuery<Record1<UUID>> query =
+            Query
+                .buildNativeQuery(aql, UUID.class);
+
+        System.out.println("the query is: "+aql);
+        @SuppressWarnings("rawtypes")
+		final List<Record1<UUID>> queryResults =
+            openEhrClient
+                .aqlEndpoint()
+                .execute(query, new ParameterValue("$index_date","2020-11-08T17:49:15+00:00"), new ParameterValue("$ehr_id", "2247ea3e-4a93-4fc9-ade0-3b4ee0c12970"));//a prior query should determine the index_date_2 but we will use current time for testing purposes.
+
+        assertNotNull(queryResults);
+    }
+    
+    @Test
+    @Ignore("substraction of periods not supported")
+    public void runsQueryContinousObservationFor1YearBeforeIndexEvent(){
+    	//--continuous observation of at least 365 days prior and 0 days after event index date.
+        final UUID ehrId =
+            openEhrClient
+                .ehrEndpoint()
+                .createEhr();
+
+        final OpenEHRConfirmedCOVID19InfectionReportV0Composition mergedEntity =
+            openEhrClient
+                .compositionEndpoint(ehrId)
+                .mergeCompositionEntity(buildConfirmedCovid19InfReport());
+
+        String aql = "select ehr_status/uid/value \n" + 
+        		"from EHR e\n" + 
+        		"contains COMPOSITION a\n" + 
+        		"where time_created/value <= ($IndexDate - P1Y)"
+        		+ 
+        		" e/ehr_id = '$ehr_id'";
+        final NativeQuery<Record1<UUID>> query =
+            Query
+                .buildNativeQuery(aql, UUID.class);
+
+        System.out.println("the query is: "+aql);
+        @SuppressWarnings("rawtypes")
+		final List<Record1<UUID>> queryResults =
+            openEhrClient
+                .aqlEndpoint()
+                .execute(query, new ParameterValue("$index_date","2020-11-08T17:49:15+00:00"), new ParameterValue("$ehr_id", "2247ea3e-4a93-4fc9-ade0-3b4ee0c12970"));//a prior query should determine the index_date_2 but we will use current time for testing purposes.
+
+        assertNotNull(queryResults);
+    }
+    
+    @Test
+    @Ignore("substraction of periods not supported")
+    public void runsQueryAllow90daysBetweenDrugExposures(){
+    	//--continuous observation of at least 365 days prior and 0 days after event index date.
+        final UUID ehrId =
+            openEhrClient
+                .ehrEndpoint()
+                .createEhr();
+
+        final OpenEHRConfirmedCOVID19InfectionReportV0Composition mergedEntity =
+            openEhrClient
+                .compositionEndpoint(ehrId)
+                .mergeCompositionEntity(buildConfirmedCovid19InfReport());
+
+        String aql = "select\n" + 
+        		"    a1/uid/value\n" + 
+        		"from EHR e\n" + 
+        		"contains COMPOSITION a1[openEHR-EHR-COMPOSITION.medication_list.v0] contains INSTRUCTION a1_a[openEHR-EHR-INSTRUCTION.medication_order.v1]\n" + 
+        		"contains COMPOSITION a2[openEHR-EHR-COMPOSITION.medication_list.v0] contains INSTRUCTION a2_a[openEHR-EHR-INSTRUCTION.medication_order.v1]\n" + 
+        		"contains COMPOSITION a3[openEHR-EHR-COMPOSITION.medication_list.v0] contains INSTRUCTION a3_a[openEHR-EHR-INSTRUCTION.medication_order.v1]\n" + 
+        		"where a1_a/activities[at0001]/description[at0002]/items[at0113]/items[at0012]/value/value <= a2_a/activities[at0001]/description[at0002]/items[at0113]/items[at0012]/value/value\n" + 
+        		"and not a3_a/activities[at0001]/description[at0002]/items[at0113]/items[at0012]/value/value <= a2_a/activities[at0001]/description[at0002]/items[at0113]/items[at0012]/value/value\n" + 
+        		"and not a3_a/activities[at0001]/description[at0002]/items[at0113]/items[at0012]/value/value >= a1_a/activities[at0001]/description[at0002]/items[at0113]/items[at0012]/value/value\n" + 
+        		"and not (a2_a/activities[at0001]/description[at0002]/items[at0113]/items[at0012]/value/value - a1_a/activities[at0001]/description[at0002]/items[at0113]/items[at0012]/value/value) > P90D\n" + 
+        		"";
+        final NativeQuery<Record1<UUID>> query =
+            Query
+                .buildNativeQuery(aql, UUID.class);
+
+        System.out.println("the query is: "+aql);
+        @SuppressWarnings("rawtypes")
+		final List<Record1<UUID>> queryResults =
+            openEhrClient
+                .aqlEndpoint()
+                .execute(query, new ParameterValue("$index_date","2020-11-08T17:49:15+00:00"), new ParameterValue("$ehr_id", "2247ea3e-4a93-4fc9-ade0-3b4ee0c12970"));//a prior query should determine the index_date_2 but we will use current time for testing purposes.
+
+        assertNotNull(queryResults);
+    }
+    
+    @Test
+    @Ignore("substraction of periods not supported")
+    public void runsQueryAtLeastOneExposureHydroxychIn30DaysBeforeIndexEvent(){
+    	//--at least 1 occurrence of a drug exposure of [OHDSI Covid19] Azithromycin3 where event starts between 30 days Before and 0 days After index start date.
+        final UUID ehrId =
+            openEhrClient
+                .ehrEndpoint()
+                .createEhr();
+
+        final OpenEHRConfirmedCOVID19InfectionReportV0Composition mergedEntity =
+            openEhrClient
+                .compositionEndpoint(ehrId)
+                .mergeCompositionEntity(buildConfirmedCovid19InfReport());
+
+        String aql = "select e/ehr_id/value\n" + 
+        		"from EHR e\n" + 
+        		"contains COMPOSITION a\n" + 
+        		"contains INSTRUCTION a_a[openEHR-EHR-INSTRUCTION.medication_order.v1]\n" + 
+        		"where\n" + 
+        		"    a_a/activities[at0001]/description[at0002]/items[at0070]/value/value='P01BA02' and\n" + 
+        		"    a_a/activities[at0001]/description[at0002]/items[at0129]/items[at0155]/value>=($index_date - P30D) and\n" + 
+        		"    a_a/activities[at0001]/description[at0002]/items[at0129]/items[at0161]/value<=$index_date";
         final NativeQuery<Record1<UUID>> query =
             Query
                 .buildNativeQuery(aql, UUID.class);
