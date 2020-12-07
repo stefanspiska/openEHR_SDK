@@ -555,7 +555,222 @@ public class PhenoTypeAqlTestIT {
 
         assertNotNull(queryResults);
     }
+    
+    @Test
+    public void runsQueryDiagnosisLabCovidLeeEtAl(){
+    	//--patient older than 65 years old. Lab confirmed COVID diagnosis between 1/1/2020 and 10/4/2020.
+        final UUID ehrId =
+            openEhrClient
+                .ehrEndpoint()
+                .createEhr();
 
+        final OpenEHRConfirmedCOVID19InfectionReportV0Composition mergedEntity =
+            openEhrClient
+                .compositionEndpoint(ehrId)
+                .mergeCompositionEntity(buildConfirmedCovid19InfReport());
+
+        String aql = "select e/ehr_id\n" + 
+        		"from EHR e\n" + 
+        		"contains COMPOSITION a\n" + 
+        		"contains (\n" + 
+        		"    OBSERVATION a_a[openEHR-EHR-OBSERVATION.lab_test-result.v1] and\n" + 
+        		"    CLUSTER a_b[openEHR-EHR-CLUSTER.person_birth_data_iso.v0])\n" + 
+        		"where\n" + 
+        		"    a/name/value='95941-1' and\n" + 
+        		"    a_a/data[at0001]/events[at0002]/data[at0003]/items[at0073]/value/defining_code/code_string='LA6576-8' and\n" + 
+        		"    a_a/data[at0001]/events[at0002]/data[at0003]/items[at0095]/items[at0096]/items[at0111]/value>='2020-01-01' and\n" + 
+        		"    a_a/data[at0001]/events[at0002]/data[at0003]/items[at0095]/items[at0096]/items[at0111]/value<='2020-04-01'";
+        //" and ($today - a_b/items[at0001]/value/value) >= P65Y"; this line is needed to specify the age but the functionality is not supported.
+        final NativeQuery<Record1<UUID>> query =
+            Query
+                .buildNativeQuery(aql, UUID.class);
+
+        System.out.println("the query is: "+aql);
+        @SuppressWarnings("rawtypes")
+		final List<Record1<UUID>> queryResults =
+            openEhrClient
+                .aqlEndpoint()
+                .execute(query);//a prior query should determine the index_date_2 but we will use current time for testing purposes.
+
+        assertNotNull(queryResults);
+    }
+    
+    @Test
+    @Ignore("Substraction of periods not allowed.")
+    public void runsQueryDiagnosisLabCovidWithAgeLeeEtAl(){
+    	//--patient older than 65 years old. Lab confirmed COVID diagnosis between 1/1/2020 and 10/4/2020.
+        final UUID ehrId =
+            openEhrClient
+                .ehrEndpoint()
+                .createEhr();
+
+        final OpenEHRConfirmedCOVID19InfectionReportV0Composition mergedEntity =
+            openEhrClient
+                .compositionEndpoint(ehrId)
+                .mergeCompositionEntity(buildConfirmedCovid19InfReport());
+
+        String aql = "select min(b_a/data[at0001]/items[at0077]/value/value)\n" + 
+        		"from EHR e\n" + 
+        		"contains COMPOSITION a[openEHR-EHR-COMPOSITION.problem_list.v1]\n" + 
+        		"contains EVALUATION b_a[openEHR-EHR-EVALUATION.problem_diagnosis.v1]\n" + 
+        		"where\n" + 
+        		"    a/name/value='Problem list' and\n" + 
+        		"    b_a/data[at0001]/items[at0002]/value/value='U07.1'\n" + 
+        		"and e/ehr_id/value='2247ea3e-4a93-4fc9-ade0-3b4ee0c12970'";
+        
+        final NativeQuery<Record1<UUID>> query =
+            Query
+                .buildNativeQuery(aql, UUID.class);
+
+        System.out.println("the query is: "+aql);
+        @SuppressWarnings("rawtypes")
+		final List<Record1<UUID>> queryResults =
+            openEhrClient
+                .aqlEndpoint()
+                .execute(query, new ParameterValue("$today",DateTime.now().toString()));//a prior query should determine the index_date_2 but we will use current time for testing purposes.
+
+        assertNotNull(queryResults);
+    }
+    
+    @Test
+    @Ignore("min is not supported")
+    public void runsQueryIndexEventForSpecifiedEhrLeeEtAl(){
+    	//Select first  Lab confirmed COVID diagnosis for a specified ehr_id.
+        final UUID ehrId =
+            openEhrClient
+                .ehrEndpoint()
+                .createEhr();
+
+        final OpenEHRConfirmedCOVID19InfectionReportV0Composition mergedEntity =
+            openEhrClient
+                .compositionEndpoint(ehrId)
+                .mergeCompositionEntity(buildConfirmedCovid19InfReport());
+
+        String aql = "select min(b_a/data[at0001]/items[at0077]/value/value)\n" + 
+        		"from EHR e\n" + 
+        		"contains COMPOSITION a[openEHR-EHR-COMPOSITION.problem_list.v1]\n" + 
+        		"contains EVALUATION b_a[openEHR-EHR-EVALUATION.problem_diagnosis.v1]\n" + 
+        		"where\n" + 
+        		"    a/name/value='Problem list' and\n" + 
+        		"    b_a/data[at0001]/items[at0002]/value/value='U07.1'\n" + 
+        		"and e/ehr_id/value='2247ea3e-4a93-4fc9-ade0-3b4ee0c12970'";
+        
+        final NativeQuery<Record1<UUID>> query =
+            Query
+                .buildNativeQuery(aql, UUID.class);
+
+        System.out.println("the query is: "+aql);
+        @SuppressWarnings("rawtypes")
+		final List<Record1<UUID>> queryResults =
+            openEhrClient
+                .aqlEndpoint()
+                .execute(query);//a prior query should determine the index_date_2 but we will use current time for testing purposes.
+
+        assertNotNull(queryResults);
+    }
+
+    @Test
+    public void runsQueryConfirmedCovidLabAnalysis(){
+    	//Select first  Lab confirmed COVID diagnosis for a specified ehr_id.
+        final UUID ehrId =
+            openEhrClient
+                .ehrEndpoint()
+                .createEhr();
+
+        final OpenEHRConfirmedCOVID19InfectionReportV0Composition mergedEntity =
+            openEhrClient
+                .compositionEndpoint(ehrId)
+                .mergeCompositionEntity(buildConfirmedCovid19InfReport());
+
+        String aql = "select e/ehr_id\n" + 
+        		"from EHR e\n" + 
+        		"contains COMPOSITION a\n" + 
+        		"contains OBSERVATION a_a[openEHR-EHR-OBSERVATION.lab_test-result.v1]\n" + 
+        		"where\n" + 
+        		"    a/name/value='95941-1' and\n" + //covid lab test in LOINC
+        		"    a_a/data[at0001]/events[at0002]/data[at0003]/items[at0073]/value/defining_code/code_string='LA6576-8' and\n" + //covid positive lab result in LOINC
+        		"    a_a/data[at0001]/events[at0002]/data[at0003]/items[at0095]/items[at0096]/items[at0111]/value>='2020-01-01' and\n" + 
+        		"    a_a/data[at0001]/events[at0002]/data[at0003]/items[at0095]/items[at0096]/items[at0111]/value<='2020-04-01'";
+        
+        final NativeQuery<Record1<UUID>> query =
+            Query
+                .buildNativeQuery(aql, UUID.class);
+
+        System.out.println("the query is: "+aql);
+        @SuppressWarnings("rawtypes")
+		final List<Record1<UUID>> queryResults =
+            openEhrClient
+                .aqlEndpoint()
+                .execute(query);//a prior query should determine the index_date_2 but we will use current time for testing purposes.
+
+        assertNotNull(queryResults);
+    }
+    
+    @Test
+    public void runsQueryPatients1YearBeforeIndexDate(){
+    	//continuously observed in the database at least 1 year prior to their index date.
+        final UUID ehrId =
+            openEhrClient
+                .ehrEndpoint()
+                .createEhr();
+
+        final OpenEHRConfirmedCOVID19InfectionReportV0Composition mergedEntity =
+            openEhrClient
+                .compositionEndpoint(ehrId)
+                .mergeCompositionEntity(buildConfirmedCovid19InfReport());
+
+        String aql = "select e/ehr_id, a/uid/value\n" + 
+        		"from EHR e\n" + 
+        		"contains COMPOSITION a\n" + 
+        		"where e/time_created<'2019-01-01'";
+        
+        final NativeQuery<Record1<UUID>> query =
+            Query
+                .buildNativeQuery(aql, UUID.class);
+
+        System.out.println("the query is: "+aql);
+        @SuppressWarnings("rawtypes")
+		final List<Record1<UUID>> queryResults =
+            openEhrClient
+                .aqlEndpoint()
+                .execute(query);//a prior query should determine the index_date_2 but we will use current time for testing purposes.
+
+        assertNotNull(queryResults);
+    }
+    
+    @Test
+    public void runsQueryPatientsWithMentalDisorderDiagnosis(){
+    	//--Patients were classified into two groups: a mental disorder and a nonmental disorder group, depending on whether they received a psychiatric illness diagnosis within 6 months before the index date.
+        final UUID ehrId =
+            openEhrClient
+                .ehrEndpoint()
+                .createEhr();
+
+        final OpenEHRConfirmedCOVID19InfectionReportV0Composition mergedEntity =
+            openEhrClient
+                .compositionEndpoint(ehrId)
+                .mergeCompositionEntity(buildConfirmedCovid19InfReport());
+
+        String aql = "select a_a/data[at0001]/items[at0002]/value/value\n" + 
+        		"from EHR e\n" + 
+        		"contains COMPOSITION a\n" + 
+        		"contains EVALUATION a_a[openEHR-EHR-EVALUATION.problem_diagnosis.v1]\n" + 
+        		"where a_a/data[at0001]/items[at0002]/value/value='F99'";
+        
+        final NativeQuery<Record1<UUID>> query =
+            Query
+                .buildNativeQuery(aql, UUID.class);
+
+        System.out.println("the query is: "+aql);
+        @SuppressWarnings("rawtypes")
+		final List<Record1<UUID>> queryResults =
+            openEhrClient
+                .aqlEndpoint()
+                .execute(query);//a prior query should determine the index_date_2 but we will use current time for testing purposes.
+
+        assertNotNull(queryResults);
+    }
+    
     private void callCreateCompositionEndpoint(UUID ehrId) {
         final OpenEHRConfirmedCOVID19InfectionReportV0Composition mergedEntity =
             openEhrClient
