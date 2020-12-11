@@ -739,7 +739,7 @@ public class PhenoTypeAqlTestIT {
     }
     
     @Test
-    public void runsQueryPatientsWithMentalDisorderDiagnosis(){
+    public void runsQueryPatientsWithMentalDisorderDiagnosisIn6MonthsPriorIndexDate(){
     	//--Patients were classified into two groups: a mental disorder and a nonmental disorder group, depending on whether they received a psychiatric illness diagnosis within 6 months before the index date.
         final UUID ehrId =
             openEhrClient
@@ -755,19 +755,22 @@ public class PhenoTypeAqlTestIT {
         		"from EHR e\n" + 
         		"contains COMPOSITION a\n" + 
         		"contains EVALUATION a_a[openEHR-EHR-EVALUATION.problem_diagnosis.v1]\n" + 
-        		"where a_a/data[at0001]/items[at0002]/value/value='F99'";
+        		"where a_a/data[at0001]/items[at0002]/value/value='F99' and "+
+        		"content[openEHR-EHR-SECTION.problems_issues_rcp.v1]/items[openEHR-EHR-EVALUATION.problem_diagnosis.v1]/data[at0001]/items[at0077]/value/value <= $index_date and \n" + 
+        		"content[openEHR-EHR-SECTION.problems_issues_rcp.v1]/items[openEHR-EHR-EVALUATION.problem_diagnosis.v1]/data[at0001]/items[at0077]/value/value >= $index_date_sub_6month\n";
+       
         
         final NativeQuery<Record1<UUID>> query =
-            Query
-                .buildNativeQuery(aql, UUID.class);
-
-        System.out.println("the query is: "+aql);
+                Query
+                    .buildNativeQuery(aql, UUID.class);
+        
         @SuppressWarnings("rawtypes")
 		final List<Record1<UUID>> queryResults =
             openEhrClient
                 .aqlEndpoint()
-                .execute(query);//a prior query should determine the index_date_2 but we will use current time for testing purposes.
+                .execute(query, new ParameterValue("$index_date",DateTime.parse("2020-06-01")), new ParameterValue("$index_date_sub_6month",DateTime.parse("2020-01-01"))));//a prior query should determine the index_date_2 but we will use current time for testing purposes.
 
+        System.out.println("the query is: "+aql);
         assertNotNull(queryResults);
     }
     
