@@ -26,18 +26,32 @@ public enum PhenotypeOpt {
 	
 	GECCO_BEATMUNGSWERTE("Respitatory frequenz parameters.",
             "Beatmungswerte.opt",
-            "Beatmungswerte");
+            "Beatmungswerte"),
+	
+	SMICS_PATIENTENAUFENHALT("Zur Repräsentation der Patientenaufenthalte im Krankenhaus. Ein Abteilungsfall kann mehrere Aufenthaltsorte eines Patienten speichern. Jeder Aufenthaltsort wird in einer Composition gespeichert. Bitte die entsprechende Kennung des zugehörigen Abteilungsfalls und Versorgungsfalls hinterlegen.",
+            "Patientenaufenthalt11012021.opt",
+            "Patientenaufenthalt"),
+	
+	SMICS_VIROLOGISCHER_BEFUND("Zur Repräsentation der Patientenaufenthalte im Krankenhaus. Ein Abteilungsfall kann mehrere Aufenthaltsorte eines Patienten speichern. Jeder Aufenthaltsort wird in einer Composition gespeichert. Bitte die entsprechende Kennung des zugehörigen Abteilungsfalls und Versorgungsfalls hinterlegen.",
+            "Virologischer_BefundSMICS.opt",
+            "Virologischer Befund"),
+	
+	SMICS_KENNZEICHNUNG_ERREGERNACHWEIS("Kennzeichnung Erregernachweis SARS-CoV-2",
+            "Kennzeichnung_ErregernachweisSARS-CoV-2.opt",
+            "Kennzeichnung Erregernachweis SARS-CoV-2"),
+	
+	SMICS_DIAGNOSTIC_RESULT("Das Template dient dazu einen virologischen Befund strukturiert wiederzugeben.",
+            "DiagnosticResultSMICS.opt",
+            "Virologischer Befund");
 	
 	private final String description;
 	private final String filename;
 	private final String templateId;
     
-    
-
     PhenotypeOpt(String description, String filename, String templateId){
+    	this.description = description;
         this.filename = filename;
         this.templateId = templateId;
-        this.description = description;
     }
 
     public InputStream getStream(){
