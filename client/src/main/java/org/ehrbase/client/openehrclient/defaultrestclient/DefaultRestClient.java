@@ -20,6 +20,7 @@ package org.ehrbase.client.openehrclient.defaultrestclient;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.net.HttpHeaders;
 import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rm.archetyped.Locatable;
@@ -51,13 +52,6 @@ import org.ehrbase.client.openehrclient.OpenEhrClient;
 import org.ehrbase.client.openehrclient.OpenEhrClientConfig;
 import org.ehrbase.client.openehrclient.TemplateEndpoint;
 import org.ehrbase.client.openehrclient.VersionUid;
-import org.ehrbase.client.openehrclient.AqlEndpoint;
-import org.ehrbase.client.openehrclient.CompositionEndpoint;
-import org.ehrbase.client.openehrclient.FolderDAO;
-import org.ehrbase.client.openehrclient.OpenEhrClient;
-import org.ehrbase.client.openehrclient.OpenEhrClientConfig;
-import org.ehrbase.client.openehrclient.TemplateEndpoint;
-import org.ehrbase.client.openehrclient.VersionUid;
 import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
 import org.ehrbase.serialisation.mapper.RmObjectJsonDeSerializer;
 import org.ehrbase.webtemplate.templateprovider.TemplateProvider;
@@ -71,8 +65,6 @@ import java.util.WeakHashMap;
 
 public class DefaultRestClient implements OpenEhrClient {
 
-    static final String ACCEPT_APPLICATION_JSON = "application/json";
-    static final String ACCEPT_APPLICATION_XML = "application/xml";
     static final ObjectMapper OBJECT_MAPPER = createObjectMapper();
     private static final String nullHostName = null;
     private static final HttpClient nullHttpClient = null;
@@ -117,7 +109,6 @@ public class DefaultRestClient implements OpenEhrClient {
         this.proxyHostName = proxyHostName;
     }
 
-
     private static ObjectMapper createObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         SimpleModule module =
@@ -130,7 +121,9 @@ public class DefaultRestClient implements OpenEhrClient {
         module.addDeserializer(DvText.class, new RmObjectJsonDeSerializer());
         module.addDeserializer(ObjectRef.class, new RmObjectJsonDeSerializer());
         module.addDeserializer(ItemStructure.class, new RmObjectJsonDeSerializer());
+
         objectMapper.registerModule(module);
+        objectMapper.registerModule(new JavaTimeModule());
         return objectMapper;
     }
 
@@ -139,9 +132,8 @@ public class DefaultRestClient implements OpenEhrClient {
     }
 
     protected VersionUid httpPost(URI uri, RMObject body, Map<String, String> headers) {
-        HttpResponse response;
         String bodyString = new CanonicalJson().marshal(body);
-        response = internalPost(uri, headers, bodyString, ContentType.APPLICATION_JSON, ACCEPT_APPLICATION_JSON);
+        HttpResponse response = internalPost(uri, headers, bodyString, ContentType.APPLICATION_JSON, ContentType.APPLICATION_JSON.getMimeType());
         Header eTag = response.getFirstHeader(HttpHeaders.ETAG);
         return new VersionUid(eTag.getValue().replace("\"", ""));
 
@@ -182,7 +174,7 @@ public class DefaultRestClient implements OpenEhrClient {
     protected VersionUid httpPut(URI uri, Locatable body, VersionUid versionUid, Map<String, String> headers) {
         try {
             Request request = Request.Put(uri)
-                    .addHeader(HttpHeaders.ACCEPT, ACCEPT_APPLICATION_JSON)
+                    .addHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.getMimeType())
                     .addHeader(HttpHeaders.IF_MATCH, versionUid.toString())
                     .bodyString(new CanonicalJson().marshal(body), ContentType.APPLICATION_JSON);
 
@@ -208,8 +200,7 @@ public class DefaultRestClient implements OpenEhrClient {
     }
 
     protected <T> Optional<T> httpGet(URI uri, Class<T> valueType, Map<String, String> headers) {
-        HttpResponse response;
-        response = internalGet(uri, headers, ACCEPT_APPLICATION_JSON);
+        HttpResponse response = internalGet(uri, headers, ContentType.APPLICATION_JSON.getMimeType());
 
         if (response.getStatusLine().getStatusCode() == HttpStatus.SC_NOT_FOUND) {
             return Optional.empty();
@@ -242,7 +233,6 @@ public class DefaultRestClient implements OpenEhrClient {
         }
         return response;
     }
-
 
     void checkStatus(HttpResponse httpResponse, int... expected) {
         if (!ArrayUtils.contains(expected, httpResponse.getStatusLine().getStatusCode())) {
