@@ -1470,20 +1470,25 @@ executors:
     working_directory: ~/projects
     docker:
       - image: circleci/python:3.8.5-node-browsers
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
         environment:
-            POSTGRES_USER: postgres
-            POSTGRES_PASSWORD: postgres
             TZ: "Europe/Berlin"
 
   docker-py3-java11-postgres:
     working_directory: ~/projects
     docker:
       - image: circleci/python:3.8.5-node-browsers
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
         environment:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
           TZ: "Europe/Berlin"
       - image: ehrbase/ehrbase-postgres:11.10
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
         environment:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
