@@ -1470,6 +1470,10 @@ executors:
     working_directory: ~/projects
     docker:
       - image: circleci/python:3.8.5-node-browsers
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+            TZ: "Europe/Berlin"
 
   docker-py3-java11-postgres:
     working_directory: ~/projects
@@ -1479,6 +1483,7 @@ executors:
         environment:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
+          TZ: "Europe/Berlin"
 
   machine-ubuntu-2004:
     description: |
@@ -1510,6 +1515,7 @@ executors:
     environment:                           #             SPEED IMPROVEMENT !!!
       PIPELINE_ID: << pipeline.id >>
       BRANCH_NAME: << pipeline.git.branch >>
+      TZ: "Europe/Berlin"
     machine:
       image: ubuntu-2004:202008-01
 
