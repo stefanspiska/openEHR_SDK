@@ -879,6 +879,13 @@ commands:
             # git config --global push.followTags true
             git remote -v
   
+  show-timezone:
+    steps:
+      - run:
+          name: SHOW TIMEZONE
+          command: |
+            cat /etc/timezone
+  
 
   install-xml-cli-tool:
     steps:
@@ -911,6 +918,7 @@ commands:
   
   build-sdk:
     steps:
+      - show-timezone
       - install-maven
       - run:
           name: Maven build, install openEHR_SDK (skip Tests!)
@@ -927,6 +935,7 @@ commands:
 
   build-and-test-sdk:
     steps:
+      - show-timezone
       - install-maven
       - run:
           name: Maven build, test (ONLY unit tests), install openEHR_SDK
@@ -945,6 +954,7 @@ commands:
     description: |
       WARNING: this command requires EHRbase to be up and running 
     steps:
+      - show-timezone
       - install-maven
       - run:
           name: Maven run only Java integration tests of openEHR_SDK
@@ -974,6 +984,7 @@ commands:
         type: boolean
         default: true
     steps:
+      - show-timezone
       - install-maven
       - run:
           name: Maven build EHRbase
