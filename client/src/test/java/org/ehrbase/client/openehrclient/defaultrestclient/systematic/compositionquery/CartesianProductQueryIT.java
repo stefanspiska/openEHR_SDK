@@ -106,6 +106,6 @@ public class CartesianProductQueryIT extends CanonicalUtil {
         assertThat(result.size()).as("Should have 2 rows resulting from cartesian product").isEqualTo(2);
 
         assertThat(Arrays.stream(result.stream().map(Record3::value2).toArray()).anyMatch(v -> v == null)).isTrue();
-        assertThat(Arrays.stream(result.stream().map(Record3::value2).toArray()).anyMatch(v -> v.equals("alternate text"))).isTrue();
+        assertThat(Arrays.stream(result.stream().map(Record3::value2).toArray()).anyMatch(v -> v != null && v.equals("alternate text"))).isTrue();
     }
 }
