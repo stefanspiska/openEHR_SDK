@@ -28,7 +28,6 @@ jobs:
           mvn versions:set -DnewVersion=${VERSION} -DprocessAllModules=true
           git add -A
           git commit -m "release ${VERSION}: updated version to${VERSION}"
-          git push -u origin 
 
       - name: Push changes
         uses: ad-m/github-push-action@master
