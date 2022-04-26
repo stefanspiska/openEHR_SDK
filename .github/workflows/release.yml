@@ -19,8 +19,8 @@ jobs:
 
       - name: Create Release Branch
         run: |
-          git config --global user.email "stefanspiska@vitagroup.ag"
-          git config --global user.name "stefanspiska"
+          git config --global user.email "stefan.spiska@vitagroup.ag"
+          git config --global user.name "stefan.spiska"
           git checkout -b release/v${VERSION}
           mvn versions:set -DnewVersion=${VERSION} -DprocessAllModules=true
           git add -A
@@ -39,6 +39,7 @@ jobs:
            STATUS=$(gh api /repos/stefanspiska/openEHR_SDK/commits/"${COMMIT}"/status -q .state)
           echo "$STATUS"
           sleep 10
+          STATUS="success"
           done
           echo "$STATUS"
           if [ "$STATUS" != "success" ]
