@@ -12,6 +12,7 @@ jobs:
     steps:
       - name: Calculate realise version
         run: echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+
       - name: Checkout
         uses: actions/checkout@v1
         with:
@@ -23,6 +24,7 @@ jobs:
         run: |
           git config --global user.email "stefan.spiska@vitagroup.ag"
           git config --global user.name "stefan.spiska"
+          gh auth login
           git checkout -b release/v${VERSION}
           mvn versions:set -DnewVersion=${VERSION} -DprocessAllModules=true
           git add -A
