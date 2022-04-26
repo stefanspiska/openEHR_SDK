@@ -14,7 +14,7 @@ jobs:
         run: echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
 
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
         env:
@@ -24,7 +24,6 @@ jobs:
         run: |
           git config --global user.email "stefan.spiska@vitagroup.ag"
           git config --global user.name "stefan.spiska"
-          gh auth login
           git checkout -b release/v${VERSION}
           mvn versions:set -DnewVersion=${VERSION} -DprocessAllModules=true
           git add -A
