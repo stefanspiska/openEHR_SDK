@@ -14,7 +14,7 @@ jobs:
         run: echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
 
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
           token:  ${{ secrets.GIT_ACCESS_TOKEN }}
@@ -28,12 +28,7 @@ jobs:
           mvn versions:set -DnewVersion=${VERSION} -DprocessAllModules=true
           git add -A
           git commit -m "release ${VERSION}: updated version to${VERSION}"
-
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GIT_ACCESS_TOKEN }}
-          branch: release/v${VERSION}
+          git push -u origin release/v${VERSION}     
 
       - name: Wait for ci pipeline
         run: |
