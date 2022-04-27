@@ -27,7 +27,8 @@ jobs:
           git config --global user.name "bot"
           git checkout -b release/v${VERSION}
           mvn versions:set -DnewVersion=${VERSION} -DprocessAllModules=true
-          sed -i 's/\[unreleased\]/${VERSION}/' CHANGELOG.md
+          replace="s/\[unreleased\]/${VERSION}/"
+          sed -i ${replace} CHANGELOG.md
           git add -A
           git commit -m "release ${VERSION}: updated version to ${VERSION}"
           git push -u origin release/v${VERSION}     
@@ -47,6 +48,9 @@ jobs:
           if [ "$STATUS" != "success" ]
            then exit 1
           fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
       - name: Merge into Main
         run: |
           git checkout master
@@ -66,4 +70,5 @@ jobs:
           git pull
           git merge --no-ff release/v${VERSION}
           git push
+
 
