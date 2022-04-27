@@ -38,11 +38,15 @@ jobs:
           STATUS="pending"
           COMMIT=$(git rev-parse HEAD)
           echo "$COMMIT"
-          while [ "$STATUS" == "pending" ]
+          WAITED=0
+          SLEEP_TIME= 60
+          while [ "$STATUS" == "pending" ] && ["$WAITED" -lq 600]
           do
            STATUS=$(gh api /repos/stefanspiska/openEHR_SDK/commits/"${COMMIT}"/status -q .state)
           echo "$STATUS"
-          sleep 10
+          sleep 60
+          WAITED=&(( &{WAITED} + 60))
+          echo &WAITED
           done
           echo "$STATUS"
           if [ "$STATUS" != "success" ]
@@ -62,7 +66,8 @@ jobs:
         run: |
           ARRAY_VERSION=( ${VERSION//./ } )
           git checkout  release/v${VERSION}
-          NEXT_VERSION= ${ARRAY_VERSION[0]}.$(expr ${ARRAY_VERSION[1]}+1).0-SNAPSHOT
+          NEXT_VERSION= ${ARRAY_VERSION[0]}.$(( ${ARRAY_VERSION[1]}+1)).0-SNAPSHOT
+          echo $NEXT_VERSION
           mvn versions:set -DnewVersion=${NEXT_VERSION} -DprocessAllModules=true
           sed -i '5i ## [unreleased]\n ### Added \n ### Fixed \n' CHANGELOG.md
           git commit -m " updated version to ${NEXT_VERSION}"
