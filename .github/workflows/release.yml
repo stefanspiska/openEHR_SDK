@@ -55,7 +55,7 @@ jobs:
           git push
 
       - name: Merge into dev
-        run:
+        run: |
           ARRAY_VERSION=( ${VERSION//./ } )
           git checkout  release/v${VERSION}
           NEXT_VERSION= ${ARRAY_VERSION[0]}.$(expr ${ARRAY_VERSION[1]}+1).0-SNAPSHOT
