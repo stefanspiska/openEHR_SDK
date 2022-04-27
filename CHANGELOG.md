@@ -2,7 +2,7 @@
 
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
-## [unreleased]
+## 1.20.1
 
 ### Added
 - Maven plugin to generate code from templates ([#347](https://github.com/ehrbase/openEHR_SDK/pull/347))
