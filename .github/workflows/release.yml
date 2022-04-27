@@ -46,7 +46,7 @@ jobs:
           echo "$STATUS"
           sleep ${SLEEP_TIME}
           WAITED=$((WAITED+SLEEP_TIME))
-          echo &WAITED
+          echo $WAITED
           done
           echo "$STATUS"
           if [ "$STATUS" != "success" ]
