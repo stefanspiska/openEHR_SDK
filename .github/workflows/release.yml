@@ -38,13 +38,13 @@ jobs:
           STATUS="pending"
           COMMIT=$(git rev-parse HEAD)
           echo "$COMMIT"
-          WAITED=0
-          SLEEP_TIME= 60
+          WAITED="0"
+          SLEEP_TIME= "60"
           while [ "$STATUS" == "pending" ] && ["$WAITED" -lq 600]
           do
            STATUS=$(gh api /repos/stefanspiska/openEHR_SDK/commits/"${COMMIT}"/status -q .state)
           echo "$STATUS"
-          sleep 60
+          sleep ${SLEEP_TIME}
           WAITED=$(( ${WAITED} + 60))
           echo &WAITED
           done
