@@ -45,7 +45,7 @@ jobs:
            STATUS=$(gh api /repos/stefanspiska/openEHR_SDK/commits/"${COMMIT}"/status -q .state)
           echo "$STATUS"
           sleep 60
-          WAITED=&(( &{WAITED} + 60))
+          WAITED=$(( ${WAITED} + 60))
           echo &WAITED
           done
           echo "$STATUS"
