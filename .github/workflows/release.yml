@@ -70,6 +70,7 @@ jobs:
           echo $NEXT_VERSION
           mvn versions:set -DnewVersion=${NEXT_VERSION} -DprocessAllModules=true
           sed -i '5i ## [unreleased]\n ### Added \n ### Fixed \n' CHANGELOG.md
+          git add -A
           git commit -m " updated version to ${NEXT_VERSION}"
           git checkout develop
           git pull
