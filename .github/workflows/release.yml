@@ -22,7 +22,7 @@ jobs:
           if [ -z "${{ github.event.inputs.version }}" ]
           then
             v=$(grep -oPm1 "(?<=<version>)[^<]+" "pom.xml" | sed 's/-SNAPSHOT//')
-            echo ${{ github.event.repo.name }}
+            echo ${{ github.repository }}
             echo "VERSION=${v}" >> $GITHUB_ENV
           else
             echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
@@ -49,7 +49,7 @@ jobs:
           SLEEP_TIME="60"
           while [ "$STATUS" == "pending" ] && [ "$WAITED" -le 600 ]
           do
-           STATUS=$(gh api /repos/${{ github.event.repo.name }}/commits/"${COMMIT}"/status -q .state)
+           STATUS=$(gh api /repos/${{ github.repository  }}/commits/"${COMMIT}"/status -q .state)
           echo "$STATUS"
           sleep ${SLEEP_TIME}
           WAITED=$((WAITED+SLEEP_TIME))
@@ -72,7 +72,7 @@ jobs:
 
       - name: Create Release
         run: |
-          gh release create "v${VERSION} -t "v${VERSION}"  -F CHANGELOG.md -R ${{ github.event.repo.name }} --target master
+          gh release create "v${VERSION} -t "v${VERSION}"  -F CHANGELOG.md -R ${{ github.repository  }} --target master
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
