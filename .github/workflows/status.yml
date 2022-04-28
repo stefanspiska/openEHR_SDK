@@ -16,11 +16,8 @@ jobs:
       - name: Create status
         run: |
          gh api repos/${{ github.repository }}/statuses/${{ github.event.workflow_run.head_commit.id }} \
-          -H 'content-type: application/json' \
-          -f '{
-            "state": "${{ github.event.workflow_run.conclusion }}",
-            "context": "${{ github.event.workflow_run.event }}.${{ github.event.workflow_run.id}}",
-            "target_url": "${{ github.event.workflow_run.html_url }}"
-            }'
+          -f "state"="${{ github.event.workflow_run.conclusion }}" \
+          -f "context"="${{ github.event.workflow_run.event }}.${{ github.event.workflow_run.id}}"\
+          -f "target_url"= "${{ github.event.workflow_run.html_url }}"
         env:
            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
