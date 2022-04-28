@@ -59,7 +59,7 @@ jobs:
           WAITED="0"
           # Time between calls
           SLEEP_TIME="60"
-          while [ "$STATUS" == "pending" ] && [ "$WAITED" -le 600 ]
+          while [ "$STATUS" == "pending" ] && [ "$WAITED" -le 1800 ]
           do
            sleep ${SLEEP_TIME}
            WAITED=$((WAITED+SLEEP_TIME))
