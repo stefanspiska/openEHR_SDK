@@ -48,7 +48,7 @@ jobs:
           SLEEP_TIME="60"
           while [ "$STATUS" == "pending" ] && [ "$WAITED" -le 600 ]
           do
-           STATUS=$(gh api /repos/${{ github.event.inputs.version }}/commits/"${COMMIT}"/status -q .state)
+           STATUS=$(gh api /repos/${{ github.event.repo.name }}/commits/"${COMMIT}"/status -q .state)
           echo "$STATUS"
           sleep ${SLEEP_TIME}
           WAITED=$((WAITED+SLEEP_TIME))
@@ -71,7 +71,7 @@ jobs:
 
       - name: Create Release
         run: |
-          gh release create "v${VERSION} -t "v${VERSION}"  -F CHANGELOG.md -R ${{ github.event.inputs.version }} --target master
+          gh release create "v${VERSION} -t "v${VERSION}"  -F CHANGELOG.md -R ${{ github.event.repo.name }} --target master
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
