@@ -15,7 +15,8 @@ jobs:
         run: |
           if [ -z "${{ github.event.inputs.version }}" ]
           then
-            echo "VERSION=${grep -oPm1 "(?<=<version>)[^<]+" "pom.xml" | sed 's/-SNAPSHOT//'}" >> $GITHUB_ENV
+            v=$(grep -oPm1 "(?<=<version>)[^<]+" "pom.xml" | sed 's/-SNAPSHOT//')
+            echo "VERSION=${v}" >> $GITHUB_ENV
           else
             echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
           fi
