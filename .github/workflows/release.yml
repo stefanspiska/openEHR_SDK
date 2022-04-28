@@ -48,7 +48,7 @@ jobs:
           SLEEP_TIME="60"
           while [ "$STATUS" == "pending" ] && [ "$WAITED" -le 600 ]
           do
-           STATUS=$(gh api /repos/stefanspiska/openEHR_SDK/commits/"${COMMIT}"/status -q .state)
+           STATUS=$(gh api /repos/${{ github.event.inputs.version }}/commits/"${COMMIT}"/status -q .state)
           echo "$STATUS"
           sleep ${SLEEP_TIME}
           WAITED=$((WAITED+SLEEP_TIME))
@@ -66,7 +66,14 @@ jobs:
           git checkout master
           git pull
           git merge --no-ff release/v${VERSION}
-          git push
+          git tag "v${VERSION}" -m "v${VERSION}" 
+          git push --tags
+
+      - name: Create Release
+        run: |
+          gh release create "v${VERSION} -t "v${VERSION}"  -F CHANGELOG.md -R ${{ github.event.inputs.version }} --target master
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
       - name: Merge into dev
         run: |
