@@ -72,7 +72,7 @@ jobs:
 
       - name: Create Release
         run: |
-          gh release create "v${VERSION} -t "v${VERSION}"  -F CHANGELOG.md -R ${{ github.repository  }} --target master
+          gh release create "v${VERSION}" -t "v${VERSION}"  -F CHANGELOG.md -R ${{ github.repository  }} --target master
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
