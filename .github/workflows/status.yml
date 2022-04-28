@@ -1,3 +1,4 @@
+# Ads the results of a workflow as a commit status
 name: Set test status
 
 on:
@@ -14,13 +15,12 @@ jobs:
     steps:
       - name: Create status
         run: |
-          curl --request POST \
-          --url https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.event.workflow_run.head_commit.id }} \
-          --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
-          --header 'content-type: application/json' \
-          --data '{
+         gh api  repos/${{ github.repository }}/statuses/${{ github.event.workflow_run.head_commit.id }} \
+          -H 'content-type: application/json' \
+          -f body '{
             "state": "${{ github.event.workflow_run.conclusion }}",
             "context": "${{ github.event.workflow_run.event }}.${{ github.event.workflow_run.id}}",
             "target_url": "${{ github.event.workflow_run.html_url }}"
-            }' \
-          --fail
+            }'
+        env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
