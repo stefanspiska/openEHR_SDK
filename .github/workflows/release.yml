@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: version
-        required: true
+        description: "optional: version to release"
+        required: false
 
 jobs:
   build:
