@@ -12,7 +12,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Calculate realise version
-        run: echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+        run: |
+          if [ -z "${{ github.event.inputs.version }}" ]
+          then
+            echo "VERSION=${grep -oPm1 "(?<=<version>)[^<]+" "pom.xml" | sed 's/-SNAPSHOT//'}" >> $GITHUB_ENV
+          else
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          fi
 
       - name: Checkout
         uses: actions/checkout@v3
