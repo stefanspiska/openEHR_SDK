@@ -67,8 +67,8 @@ jobs:
           git checkout master
           git pull
           git merge --no-ff release/v${VERSION}
-          git tag "v${VERSION}" -m "v${VERSION}" 
-          git push --tags
+          git tag  -a  -m "v${VERSION}" "v${VERSION}"
+          git push --follow-tags
 
       - name: Create Release
         run: |
