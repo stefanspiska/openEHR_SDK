@@ -27,9 +27,9 @@ jobs:
             v=$(grep -oPm1 "(?<=<version>)[^<]+" "pom.xml" | sed 's/-SNAPSHOT//')
             echo ${{ github.repository }}
           else
-            v= ${{ github.event.inputs.version }}
+            v=${{ github.event.inputs.version }}
           fi
-          echo realise version ${v}
+          echo "realise version ${v}"
           # Set as Environment for all further steps 
           echo "VERSION=${v}" >> $GITHUB_ENV
 
@@ -55,7 +55,7 @@ jobs:
           STATUS="pending"
           # Get commit last commit of release branch
           COMMIT=$(git rev-parse HEAD)
-          echo "$COMMIT"
+          echo "Listen for commit $COMMIT"
           WAITED="0"
           # Time between calls
           SLEEP_TIME="60"
